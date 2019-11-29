@@ -84,7 +84,7 @@ class DisjointSet:
     def clusters(self):
         cid_map = {}
         for i, node in enumerate(self.root):
-            root = self.find_root(node)
+            root = self.find_root(i)
             if root not in cid_map:
                 cid_map[root] = [i]
             else:

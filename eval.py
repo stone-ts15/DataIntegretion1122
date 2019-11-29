@@ -3,6 +3,7 @@ from collections import OrderedDict
 import data
 import meta_blocking
 import json
+from data import Dataset
 
 
 def save_benchmark(end=1000):
@@ -77,8 +78,7 @@ def val(pred_file, real_file):
     return precision, recall, f1
 
 
-
-
+def val_pairwise(ds: Dataset, matches: [(int, int)]):
 
 
 
