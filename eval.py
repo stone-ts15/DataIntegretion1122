@@ -6,14 +6,17 @@ import json
 
 
 def save_benchmark(end=1000):
-    with open('benchmark1.csv', 'w', encoding='utf-8', newline='') as fo:
+    with open('data\\benchmark.csv', 'w', encoding='utf-8', newline='') as fo:
         writer = csv.writer(fo)
-        with open('train.csv', 'r', encoding='utf-8') as fi:
+        with open('data\\train.csv', 'r', encoding='utf-8') as fi:
             reader = csv.reader(fi)
             for line in reader:
-                cuid = int(line[0])
-                if cuid < 1000:
+                ruid = int(line[1])
+                if ruid < 1000:
                     writer.writerow(line)
+                # cuid = int(line[0])
+                # if cuid < 1000:
+                #     writer.writerow(line)
 
 
 def calc_real_pairs():
@@ -82,7 +85,7 @@ def val(pred_file, real_file):
 
 if __name__ == "__main__":
     # calc_real_pairs()
-    print(val('bm_real.csv', 'bm_fake.csv'))
-
+    # print(val('data\\bm_real.csv', 'data\\bm_fake.csv'))
+    save_benchmark(1000)
     
 

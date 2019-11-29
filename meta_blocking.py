@@ -1,17 +1,47 @@
 
-from data import Dataset, Row
+from data import Dataset, Row, DisjointSet
+import csv
 
 
 class Method:
-    pass
+    def __init__(self):
+        self.blocks = {'null': tuple()}
+        self.nrows = 0
+
+    def __call__(self, ds: Dataset, key: str):
+        self.nrows = ds.nrows
+
+    def block_to_result(self, threshold: int):
+        pair_map = {}
+        for k, tp in self.blocks.items():
+            for i in tp:
+                for j in tp:
+                    if i < j:
+                        pair = (i, j)
+                        if pair in pair_map:
+                            pair_map[pair] += 1
+                        else:
+                            pair_map[pair] = 1
+
+        matches = []
+        for pair, nedges in pair_map.items():
+            if nedges >= threshold:
+                matches.append(pair)
+
+
+        print(matches[:20])
+
+        result = DisjointSet(self.nrows)
+        result.update(matches)
+        return result.clusters()
 
 
 class TokenBlocking(Method):
     def __init__(self, attr_len, tk_len, interval):
+        super(TokenBlocking, self).__init__()
         self.attr_len = attr_len
         self.tk_len = tk_len
         self.interval = interval
-        self.blocks = {'null': tuple()}
 
     def __call__(self, ds: Dataset, key):
         for i, row in enumerate(ds.rows):
@@ -50,6 +80,7 @@ class TokenBlocking(Method):
 
 class SoundexBlocking(Method):
     def __init__(self):
+        super(SoundexBlocking, self).__init__()
         self.alphabet = {
             1: 'BFPV',
             2: 'CGJKQSXZ',
@@ -65,7 +96,7 @@ class SoundexBlocking(Method):
 
     def soundex(self, s: str):
         if not s:
-            return '0000'
+            return None
             
         s = s.upper()
         first = s[0]
@@ -84,5 +115,34 @@ class SoundexBlocking(Method):
         
         result += '0000'
         return result[:4]
+
+    def __call__(self, ds: Dataset, key):
+        super(SoundexBlocking, self).__call__(ds, key)
+        for i, row in enumerate(ds.rows):
+            attr = row[key]
+            # attr: Kezun
+            # attr: Kezhun
+            encoding = self.soundex(attr)
+            if encoding is None:
+                self.blocks['null'] = self.blocks['null'] + (row.ruid, )
+                continue
+
+            if encoding in self.blocks:
+                self.blocks[encoding] = self.blocks[encoding] + (row.ruid, )
+            else:
+                self.blocks[encoding] = (row.ruid, )
+
+            if i % 20000 == 0:
+                print('match ', i)
+
+        dep_keys = []
+        for k, v in self.blocks.items():
+            if len(v) <= 1 or dep_keys == 'null':
+                dep_keys.append(k)
+
+        for k in dep_keys:
+            del self.blocks[k]
+        return self.blocks
+
 
 
