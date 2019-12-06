@@ -63,14 +63,14 @@ class Dataset:
 
 
 class DisjointSet:
-    def __init__(self, nrows: int):
-        print(nrows)
-        self.nrows = nrows
-        self.root = [-1] * nrows
+    def __init__(self, ds):
+        # print(nrows)
+        self.nrows = ds.nrows
+        self.root = {row.ruid: -1 for row in ds.rows}
         self.cid_map = None
 
     def find_root(self, i: int):
-        root_i = self.root[i]
+        root_i = self.root.get(i, -1)
         if root_i >= 0:
             root_2 = self.find_root(root_i)
             self.root[i] = root_2
@@ -84,22 +84,25 @@ class DisjointSet:
             roota = self.find_root(a)
             rootb = self.find_root(b)
 
-            depth_a, depth_b = -self.root[roota], -self.root[rootb]
+            if roota == rootb:
+                continue
+
+            depth_a, depth_b = -self.root.get(roota, -1), -self.root.get(rootb, -1)
             if depth_a >= depth_b:
                 self.root[rootb] = roota
-                self.root[roota] -= depth_b
+                self.root[roota] = self.root.get(roota, -1) - depth_b
             else:
                 self.root[roota] = rootb
-                self.root[rootb] -= depth_a
+                self.root[rootb] = self.root.get(rootb, -1) - depth_a
 
     def clusters(self):
         cid_map = {}
-        for i, node in enumerate(self.root):
-            root = self.find_root(i)
+        for node in self.root:
+            root = self.find_root(node)
             if root not in cid_map:
-                cid_map[root] = [i]
+                cid_map[root] = [node]
             else:
-                cid_map[root].append(i)
+                cid_map[root].append(node)
         self.cid_map = cid_map
         return cid_map.values()
 

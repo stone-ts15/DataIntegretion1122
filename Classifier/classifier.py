@@ -48,7 +48,7 @@ def load_model(model_path):
 def cluster_by_classifier_n2(rows, clf):
     clusters = []
     for i, row in enumerate(rows):
-        if i % 100 == 0:
+        if (i + 1) % 100 == 0:
             print(f'[{time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}] Cluster: {i}/{len(rows)}')
         assign = False
         for cluster in clusters:
@@ -118,4 +118,13 @@ def cluster_by_classifier_fast(rows, clf):
     return []
 
 
-cluster_by_classifier = cluster_by_classifier_n2_2
+cluster_by_classifier = cluster_by_classifier_n2
+
+
+def write_clusters(clusters, pred_path):
+    for cluster in clusters:
+        cluster.sort()
+    clusters.sort(key=lambda x: x[0])
+    with open(pred_path, 'w') as out:
+        for cluster in clusters:
+            out.write(','.join(map(str, cluster)) + '\n')

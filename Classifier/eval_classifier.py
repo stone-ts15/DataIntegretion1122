@@ -122,11 +122,8 @@ def evaluate_cluster(data_path, model_path, real_path, pred_path):
     rows = dataset.rows
     clf = load_model(model_path)
     clusters = cluster_by_classifier(rows, clf)
-    for cluster in clusters:
-        cluster.sort()
-    with open(pred_path, 'w') as out:
-        for cluster in clusters:
-            out.write(','.join(map(str, cluster)) + '\n')
+
+    write_clusters(clusters, pred_path)
     precision, recall, f1 = val(pred_path, real_path)
     print(f'precision: {precision}')
     print(f'recall: {recall}')
@@ -159,19 +156,19 @@ def train_classifier(root, model_path):
 
 def main():
     random.seed(1)
-    train_cuid_range = (0, 1000)
-    test_cuid_range = (1000, 2000)
+    train_cuid_range = (0, 5000)
+    test_cuid_range = (train_cuid_range[1], 10000)
     root = _get_dataset_root(train_cuid_range, test_cuid_range)
-    model_path = os.path.join(root, 'DTClassifier.model')
+    model_path = os.path.join(root, 'clf.model')
 
     # prepare_records(train_cuid_range, test_cuid_range)
     # prepare_dataset(root, positive_rate=0.1)
 
-    # train_classifier(root, model_path)
+    train_classifier(root, model_path)
 
-    tag = 'test'
-    evaluate_cluster(os.path.join(root, f'{tag}.csv'), model_path,
-                     os.path.join(root, f'{tag}_real.csv'), os.path.join(root, f'{tag}_pred.csv'))
+    # tag = 'test'
+    # evaluate_cluster(os.path.join(root, f'{tag}.csv'), model_path,
+    #                  os.path.join(root, f'{tag}_real.csv'), os.path.join(root, f'{tag}_pred.csv'))
 
 
 if __name__ == '__main__':
