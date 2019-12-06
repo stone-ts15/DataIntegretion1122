@@ -115,6 +115,13 @@ class MultiBlocking:
 
         return matches
 
+    def blocking(self, ds: Dataset, threshold_all):
+        matches = self(ds, threshold_all)
+        result = DisjointSet(ds.nrows)
+        result.update(matches)
+
+        ds_blocks = [Dataset.from_rows(ds, cluster) for cluster in result.clusters()]
+
 
 class FullBlocking(BlockingMethod):
     def __init__(self):
