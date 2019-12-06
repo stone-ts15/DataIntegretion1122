@@ -1,6 +1,8 @@
 # data files
+.idea
 *.csv
 data/*.csv
+data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

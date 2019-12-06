@@ -1,4 +1,3 @@
-
 from data import Dataset, Row
 
 
@@ -17,7 +16,7 @@ class TokenBlocking(Method):
         for i, row in enumerate(ds.rows):
             attr = row[key]
             if attr == '000000000':
-                self.blocks['null'] = self.blocks['null'] + (row.ruid, )
+                self.blocks['null'] = self.blocks['null'] + (row.ruid,)
                 continue
 
             start = 0
@@ -29,9 +28,9 @@ class TokenBlocking(Method):
 
                 token = attr[start:end]
                 if token in self.blocks:
-                    self.blocks[token] = self.blocks[token] + (row.ruid, )
+                    self.blocks[token] = self.blocks[token] + (row.ruid,)
                 else:
-                    self.blocks[token] = (row.ruid, )
+                    self.blocks[token] = (row.ruid,)
 
                 start += self.interval
 
@@ -66,7 +65,7 @@ class SoundexBlocking(Method):
     def soundex(self, s: str):
         if not s:
             return '0000'
-            
+
         s = s.upper()
         first = s[0]
         last_digit = -1
@@ -81,8 +80,6 @@ class SoundexBlocking(Method):
                     last_digit = digit
             else:
                 last_digit = -1
-        
+
         result += '0000'
         return result[:4]
-
-

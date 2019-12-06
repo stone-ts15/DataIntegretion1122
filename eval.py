@@ -1,24 +1,24 @@
 import csv
+import os
 from collections import OrderedDict
-import data
-import meta_blocking
-import json
+
+DATA_ROOT = 'data'
 
 
 def save_benchmark(end=1000):
-    with open('benchmark1.csv', 'w', encoding='utf-8', newline='') as fo:
+    with open(os.path.join(DATA_ROOT, 'benchmark.csv'), 'w', encoding='utf-8', newline='') as fo:
         writer = csv.writer(fo)
-        with open('train.csv', 'r', encoding='utf-8') as fi:
+        with open(os.path.join(DATA_ROOT, 'train.csv'), 'r', encoding='utf-8') as fi:
             reader = csv.reader(fi)
             for line in reader:
                 cuid = int(line[0])
-                if cuid < 1000:
+                if cuid < end:
                     writer.writerow(line)
 
 
 def calc_real_pairs():
     ans = OrderedDict()
-    with open('benchmark.csv', 'r', encoding='utf-8') as f:
+    with open(os.path.join(DATA_ROOT, 'benchmark.csv'), 'r', encoding='utf-8') as f:
         reader = csv.reader(f)
         for line in reader:
             cuid = int(line[0])
@@ -27,8 +27,8 @@ def calc_real_pairs():
                 ans[cuid].append(recid)
             else:
                 ans[cuid] = [recid]
-    
-    with open('bm_real.csv', 'w', encoding='utf-8', newline='') as fo:
+
+    with open(os.path.join(DATA_ROOT, 'bm_real.csv'), 'w', encoding='utf-8', newline='') as fo:
         writer = csv.writer(fo)
         for cuid, recs in ans.items():
             writer.writerow(recs)
@@ -74,15 +74,11 @@ def val(pred_file, real_file):
     return precision, recall, f1
 
 
-
-
-
-
+def main():
+    save_benchmark()
+    calc_real_pairs()
+    print(val(os.path.join(DATA_ROOT, 'bm_fake.csv'), os.path.join(DATA_ROOT, 'bm_real.csv')))
 
 
 if __name__ == "__main__":
-    # calc_real_pairs()
-    print(val('bm_real.csv', 'bm_fake.csv'))
-
-    
-
+    main()
