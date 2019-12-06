@@ -14,6 +14,9 @@ def save_benchmark(end=1000):
                 cuid = int(line[0])
                 if cuid < end:
                     writer.writerow(line)
+                # cuid = int(line[0])
+                # if cuid < 1000:
+                #     writer.writerow(line)
 
 
 def calc_real_pairs():
@@ -75,7 +78,7 @@ def val(pred_file, real_file):
 
 
 def main():
-    save_benchmark()
+    save_benchmark(1000)
     calc_real_pairs()
     print(val(os.path.join(DATA_ROOT, 'bm_fake.csv'), os.path.join(DATA_ROOT, 'bm_real.csv')))
 
