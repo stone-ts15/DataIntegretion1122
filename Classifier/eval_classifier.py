@@ -64,7 +64,7 @@ def prepare_records(train_cuid_range, test_cuid_range):
 
 def prepare_dataset(root, data_rate=1.0, positive_rate=0.5):
     def _prepare(record_filename, data_filename):
-        dataset = Dataset(record_filename)
+        dataset = Dataset.from_csv(record_filename)
         clusters = list(dataset.rows_oc.values())
         all_positive_count = sum(len(v) * (len(v) - 1) / 2 for v in clusters)
         all_count = int(all_positive_count / positive_rate * data_rate)
@@ -118,7 +118,7 @@ def evaluate_classifier(real_labels, pred_labels):
 
 
 def evaluate_cluster(data_path, model_path, real_path, pred_path):
-    dataset = Dataset(data_path)
+    dataset = Dataset.from_csv(data_path)
     rows = dataset.rows
     clf = load_model(model_path)
     clusters = cluster_by_classifier(rows, clf)

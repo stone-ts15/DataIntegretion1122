@@ -76,7 +76,7 @@ class BlockingMethod:
         matches = []
         for pair, nedges in pair_map.items():
             if nedges >= threshold:
-                matches.append(pair)
+                matches.append((pair, nedges))
 
         return matches
 
