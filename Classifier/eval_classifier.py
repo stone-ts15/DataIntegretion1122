@@ -73,7 +73,7 @@ def prepare_dataset(root, data_rate=1.0, positive_rate=0.5):
 
         with open(data_filename, 'w') as data_out:
             for i in range(all_count):
-                if i % 100 == 0:
+                if i % 1000 == 0:
                     print(f'[{data_filename}] Process: {i}')
                 if random.random() < positive_rate:
                     label = 1
@@ -119,8 +119,9 @@ def evaluate_classifier(real_labels, pred_labels):
 
 def evaluate_cluster(data_path, model_path, real_path, pred_path):
     dataset = Dataset(data_path)
+    rows = dataset.rows
     clf = load_model(model_path)
-    clusters = cluster_by_classifier(dataset, clf)
+    clusters = cluster_by_classifier(rows, clf)
     for cluster in clusters:
         cluster.sort()
     with open(pred_path, 'w') as out:
@@ -132,19 +133,14 @@ def evaluate_cluster(data_path, model_path, real_path, pred_path):
     print(f'f1: {f1}')
 
 
-def main():
-    random.seed(1)
-    train_cuid_range = (0, 1000)
-    test_cuid_range = (1000, 2000)
-    root = _get_dataset_root(train_cuid_range, test_cuid_range)
-    prepare_records(train_cuid_range, test_cuid_range)
-    prepare_dataset(root, positive_rate=0.1)
+def train_classifier(root, model_path):
     train_features, train_labels, test_features, test_labels = load_dataset(root)
 
-    model_path = os.path.join(root, 'DTClassifier.model')
-    # clf = load_model(model_path)
-    clf = DTClassifier(max_depth=3, random_state=1)
+    clf = LRClassifier(C=1, random_state=1)
+    # clf = DTClassifier(max_depth=3, random_state=1)
+    # clf = RBClassifier()
     clf.fit(train_features, train_labels)
+    save_model(clf, model_path)
 
     print('========== Train =============')
     pred_labels = clf.predict(train_features)
@@ -160,12 +156,22 @@ def main():
     evaluate_classifier(test_labels, pred_labels)
     print('=============================')
 
-    save_model(clf, model_path)
+
+def main():
+    random.seed(1)
+    train_cuid_range = (0, 1000)
+    test_cuid_range = (1000, 2000)
+    root = _get_dataset_root(train_cuid_range, test_cuid_range)
+    model_path = os.path.join(root, 'DTClassifier.model')
+
+    # prepare_records(train_cuid_range, test_cuid_range)
+    # prepare_dataset(root, positive_rate=0.1)
+
+    # train_classifier(root, model_path)
+
     tag = 'test'
-    evaluate_cluster(os.path.join(root, f'{tag}.csv'),
-                     model_path,
-                     os.path.join(root, f'{tag}_real.csv'),
-                     os.path.join(root, f'{tag}_pred.csv'))
+    evaluate_cluster(os.path.join(root, f'{tag}.csv'), model_path,
+                     os.path.join(root, f'{tag}_real.csv'), os.path.join(root, f'{tag}_pred.csv'))
 
 
 if __name__ == '__main__':
