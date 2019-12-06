@@ -29,26 +29,37 @@ class Row:
 
 
 class Dataset:
-    def __init__(self, csvpath):
+    def __init__(self):
         self.rows = []
         self.rows_oc = {}
         self.nrows = 0
 
+    @classmethod
+    def from_csv(cls, csvpath):
+        ds = Dataset()
         with open(csvpath, 'r', encoding='utf-8') as f:
             reader = csv.reader(f)
             for i, line in enumerate(reader):
                 cuid = int(line[0])
                 ruid = int(line[1])
                 row = Row(cuid, ruid, tuple(line[2:]))
-                self.rows.append(row)
-                if cuid in self.rows_oc:
-                    self.rows_oc[cuid] = self.rows_oc[cuid] + (row,)
+                ds.rows.append(row)
+                if cuid in ds.rows_oc:
+                    ds.rows_oc[cuid] = ds.rows_oc[cuid] + (row,)
                 else:
-                    self.rows_oc[cuid] = (row,)
+                    ds.rows_oc[cuid] = (row,)
 
                 if i % 20000 == 0:
                     print('read ', i)
-            self.nrows = len(self.rows)
+        ds.nrows = len(ds.rows)
+        return ds
+
+    @classmethod
+    def from_rows(cls, src, cluster: [int]):
+        ds = Dataset()
+        ds.rows = [src.rows[ruid] for ruid in cluster]
+        ds.nrows = len(cluster)
+        return ds
 
 
 class DisjointSet:
@@ -90,5 +101,5 @@ class DisjointSet:
             else:
                 cid_map[root].append(i)
         self.cid_map = cid_map
-        return cid_map
+        return cid_map.values()
 
