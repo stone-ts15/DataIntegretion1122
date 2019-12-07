@@ -20,6 +20,11 @@ class Row:
         self.cuid = cuid
         self.ruid = ruid
         self.data = data
+        self.relations = []
+        self.neighbors = {}
+
+        # neighbors: {id: weight}
+        self.visited = False
 
     def __getitem__(self, key):
         if isinstance(key, int):
@@ -29,8 +34,10 @@ class Row:
 
 
 class Vertex:
-    def __init__(self, ruid):
-        self.ruid = ruid
+    def __init__(self, row: Row):
+        self.row_ref = row
+        self.ruid = row.ruid
+        self.cuid = row.cuid
         self.relations = ()
         self.neighbors = []
 
@@ -43,6 +50,7 @@ class Dataset:
         self.rows = []
         self.rows_oc = {}
         self.nrows = 0
+        self.vertices = []
 
     @classmethod
     def from_csv(cls, csvpath):
@@ -54,6 +62,9 @@ class Dataset:
                 ruid = int(line[1])
                 row = Row(cuid, ruid, tuple(line[2:]))
                 ds.rows.append(row)
+                # vertex = Vertex(ruid, cuid)
+                # ds.vertices.append(vertex)
+
                 if cuid in ds.rows_oc:
                     ds.rows_oc[cuid] = ds.rows_oc[cuid] + (row,)
                 else:

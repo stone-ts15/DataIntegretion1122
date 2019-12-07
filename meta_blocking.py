@@ -1,5 +1,6 @@
 from data import Dataset, Row, DisjointSet
 import csv
+import queue
 
 
 class BlockingMethod:
@@ -7,14 +8,29 @@ class BlockingMethod:
         'log_interval': 20000
     }
 
-    def __init__(self):
+    def __init__(self, edge_weight):
         self.blocks = {'null': []}
         self.nrows = 0
         self.relations = None
         self.block_id_map = None
+        self.edge_weight = edge_weight
 
     def __call__(self, ds: Dataset, key: str):
         self.nrows = ds.nrows
+
+    def update_ds(self, row, attr: str):
+        if attr in self.blocks:
+            for neighbor_row in self.blocks[attr]:
+                if neighbor_row.ruid in row.neighbors:
+                    row.neighbors[neighbor_row.ruid][1] += self.edge_weight
+                    neighbor_row.neighbors[row.ruid][1] += self.edge_weight
+                else:
+                    row.neighbors[neighbor_row.ruid] = [neighbor_row, self.edge_weight]
+                    neighbor_row.neighbors[row.ruid] = [row, self.edge_weight]
+
+            self.blocks[attr].append(row)
+        else:
+            self.blocks[attr] = [row]
 
     def del_outliers(self):
         outlier_keys = []
@@ -86,34 +102,62 @@ class BlockingMethod:
 
 
 class MultiBlocking:
-    def __init__(self, methods: [(BlockingMethod, str, int)]):
+    def __init__(self, methods: [(BlockingMethod, str)]):
         self.method_details = methods
 
     def __call__(self, ds: Dataset, threshold_all):
         all_matches = []
-        for method, key, threshold_blocking in self.method_details:
+        for method, key in self.method_details:
             method(ds, key)
-            all_matches.append(method.block_to_result(threshold_blocking))
+            # all_matches.append(method.block_to_result(threshold_blocking))
 
-        shared_blockings = {}
-        match_map = {}
-        for match in all_matches:
-            for (ri, rj), common_weight in match:
-                shared_blockings[ri] = shared_blockings.get(ri, 0) + 1
-                shared_blockings[rj] = shared_blockings.get(rj, 0) + 1
-                if (ri, rj) not in match_map:
-                    match_map[(ri, rj)] = common_weight
-                else:
-                    match_map[(ri, rj)] += common_weight
+        # bfs
+        blocks = []
+        for row in ds.rows:
+            row.visited = False
 
-        matches = []
-        for (ri, rj), weight in match_map.items():
-            Bi, Bj, Bij = shared_blockings[ri], shared_blockings[rj], weight
-            Jaccard = Bij / (Bi + Bj - Bij)
-            if Jaccard >= threshold_all:
-                matches.append((ri, rj))
+        for row in ds.rows:
+            if row.visited:
+                continue
 
-        return matches
+            row.visited = True
+            new_block = []
+            candidate_queue = queue.Queue(maxsize=2000000)
+            candidate_queue.put(row)
+
+            while not candidate_queue.empty():
+                cand = candidate_queue.get()
+                new_block.append(cand)
+                for neighbor_id, (neighbor, weight) in cand.neighbors.items():
+                    if not neighbor.visited and weight >= threshold_all:
+                        neighbor.visited = True
+                        candidate_queue.put(neighbor)
+
+            blocks.append(new_block)
+
+        return blocks
+
+
+
+        # shared_blockings = {}
+        # match_map = {}
+        # for match in all_matches:
+        #     for (ri, rj), common_weight in match:
+        #         shared_blockings[ri] = shared_blockings.get(ri, 0) + 1
+        #         shared_blockings[rj] = shared_blockings.get(rj, 0) + 1
+        #         if (ri, rj) not in match_map:
+        #             match_map[(ri, rj)] = common_weight
+        #         else:
+        #             match_map[(ri, rj)] += common_weight
+        #
+        # matches = []
+        # for (ri, rj), weight in match_map.items():
+        #     Bi, Bj, Bij = shared_blockings[ri], shared_blockings[rj], weight
+        #     Jaccard = Bij / (Bi + Bj - Bij)
+        #     if Jaccard >= threshold_all:
+        #         matches.append((ri, rj))
+
+        # return matches
 
     def blocking(self, ds: Dataset, threshold_all):
         matches = self(ds, threshold_all)
@@ -125,31 +169,29 @@ class MultiBlocking:
 
 
 class FullBlocking(BlockingMethod):
-    def __init__(self):
-        super(FullBlocking, self).__init__()
+    def __init__(self, edge_weight):
+        super(FullBlocking, self).__init__(edge_weight)
 
     def __call__(self, ds: Dataset, key):
         for i, row in enumerate(ds.rows):
             attr = row[key]
             ruid = row.ruid
             if not attr:
-                self.blocks['null'].append(row.ruid)
+                pass
+                # self.blocks['null'].append(row.ruid)
 
-            if attr in self.blocks:
-                self.blocks[attr].append(ruid)
-            else:
-                self.blocks[attr] = [ruid]
+            self.update_ds(row, attr)
 
             if i % self.debug['log_interval'] == 0:
                 print('match ', i)
 
-        self.del_outliers()
-        return self.blocks
+        # self.del_outliers()
+        # return self.blocks
 
 
 class TokenBlocking(BlockingMethod):
-    def __init__(self, tk_len, interval):
-        super(TokenBlocking, self).__init__()
+    def __init__(self, tk_len, interval, edge_weight):
+        super(TokenBlocking, self).__init__(edge_weight)
         self.tk_len = tk_len
         self.interval = interval
 
@@ -169,10 +211,8 @@ class TokenBlocking(BlockingMethod):
                     break
 
                 token = attr[start:end]
-                if token in self.blocks:
-                    self.blocks[token].append(ruid)
-                else:
-                    self.blocks[token] = [row.ruid]
+                self.update_ds(token)
+
                 start += self.interval
             if i % self.debug['log_interval'] == 0:
                 print('match ', i)
@@ -181,8 +221,8 @@ class TokenBlocking(BlockingMethod):
 
 
 class SoundexBlocking(BlockingMethod):
-    def __init__(self):
-        super(SoundexBlocking, self).__init__()
+    def __init__(self, edge_weight):
+        super(SoundexBlocking, self).__init__(edge_weight)
         self.alphabet = {
             1: 'BFPV',
             2: 'CGJKQSXZ',
@@ -229,10 +269,7 @@ class SoundexBlocking(BlockingMethod):
                 self.blocks['null'].append(ruid)
                 continue
 
-            if encoding in self.blocks:
-                self.blocks[encoding].append(ruid)
-            else:
-                self.blocks[encoding] = [ruid]
+            self.update_ds(row, encoding)
 
             if i % self.debug['log_interval'] == 0:
                 print('match ', i)
