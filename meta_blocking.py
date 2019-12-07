@@ -95,12 +95,12 @@ class MultiBlocking:
             method(ds, key)
             all_matches.append(method.block_to_result(threshold_blocking))
 
-        shared_blockings = [0] * ds.nrows
+        shared_blockings = {}
         match_map = {}
         for match in all_matches:
             for (ri, rj), common_weight in match:
-                shared_blockings[ri] += 1
-                shared_blockings[rj] += 1
+                shared_blockings[ri] = shared_blockings.get(ri, 0) + 1
+                shared_blockings[rj] = shared_blockings.get(rj, 0) + 1
                 if (ri, rj) not in match_map:
                     match_map[(ri, rj)] = common_weight
                 else:
@@ -117,7 +117,7 @@ class MultiBlocking:
 
     def blocking(self, ds: Dataset, threshold_all):
         matches = self(ds, threshold_all)
-        result = DisjointSet(ds.nrows)
+        result = DisjointSet(ds)
         result.update(matches)
 
         ds_blocks = [Dataset.from_rows(ds, cluster) for cluster in result.clusters()]
