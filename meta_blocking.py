@@ -76,7 +76,7 @@ class BlockingMethod:
         matches = []
         for pair, nedges in pair_map.items():
             if nedges >= threshold:
-                matches.append(pair)
+                matches.append((pair, nedges))
 
         return matches
 
@@ -107,7 +107,7 @@ class MultiBlocking:
                     match_map[(ri, rj)] += common_weight
 
         matches = []
-        for (ri, rj), weight in match_map:
+        for (ri, rj), weight in match_map.items():
             Bi, Bj, Bij = shared_blockings[ri], shared_blockings[rj], weight
             Jaccard = Bij / (Bi + Bj - Bij)
             if Jaccard >= threshold_all:
@@ -121,6 +121,7 @@ class MultiBlocking:
         result.update(matches)
 
         ds_blocks = [Dataset.from_rows(ds, cluster) for cluster in result.clusters()]
+        return ds_blocks
 
 
 class FullBlocking(BlockingMethod):

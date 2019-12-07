@@ -28,6 +28,16 @@ class Row:
             return self.data[self.idx[key]]
 
 
+class Vertex:
+    def __init__(self, ruid):
+        self.ruid = ruid
+        self.relations = ()
+        self.neighbors = []
+
+
+
+
+
 class Dataset:
     def __init__(self):
         self.rows = []
