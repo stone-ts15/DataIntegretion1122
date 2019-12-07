@@ -66,9 +66,9 @@ class Dataset:
                 # ds.vertices.append(vertex)
 
                 if cuid in ds.rows_oc:
-                    ds.rows_oc[cuid] = ds.rows_oc[cuid] + (row,)
+                    ds.rows_oc[cuid].append(row)
                 else:
-                    ds.rows_oc[cuid] = (row,)
+                    ds.rows_oc[cuid] = [row]
 
                 if i % 20000 == 0:
                     print('read ', i)
