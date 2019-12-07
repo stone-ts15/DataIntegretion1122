@@ -211,7 +211,7 @@ class TokenBlocking(BlockingMethod):
                     break
 
                 token = attr[start:end]
-                self.update_ds(token)
+                self.update_ds(row, token)
 
                 start += self.interval
             if i % self.debug['log_interval'] == 0:

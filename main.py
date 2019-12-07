@@ -12,20 +12,21 @@ def classifier_main():
 
 
 def block_main():
-    root = 'data/0-5000#5000-10000'
+    # root = 'data/0-5000#5000-10000'
     # root = 'data/0-1000#1000-2000'
+    root = 'data/0-1200894#1200894-2401789'
     model_path = os.path.join(root, 'clf.model')
     real_path = os.path.join(root, 'test_real.csv')
     pred_path = os.path.join(root, 'test_pred.csv')
     dataset = Dataset.from_csv(os.path.join(root, 'test.csv'))
     group = MultiBlocking([
-        (TokenBlocking(3, 3), 'ssn', 1),
-        # (SoundexBlocking(), 'fname', 1),
-        # (SoundexBlocking(), 'lname', 1),
-        # (SoundexBlocking(), 'stadd', 1),
+        (TokenBlocking(3, 3, 1), 'ssn'),
+        (SoundexBlocking(1), 'fname'),
+        (SoundexBlocking(1), 'lname'),
+        (SoundexBlocking(1), 'stadd'),
     ])
     # blocking = SoundexBlocking()
-    blocks = group.blocking(dataset, 0.05)
+    blocks = group(dataset, 2)
     # rows_dict = {}
     # for row in dataset.rows:
     #     rows_dict[row.ruid] = row
