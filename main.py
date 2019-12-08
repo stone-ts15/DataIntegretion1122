@@ -5,6 +5,7 @@ from Classifier.classifier import cluster_by_classifier, load_model, write_clust
 from eval import val
 from meta_blocking import *
 from cluster import *
+import sys
 
 
 def classifier_main():
@@ -48,20 +49,17 @@ def block_main():
     print(f'f1: {f1}')
 
 
-def cluster_main():
+def cluster_main(dataset_path, real_path):
     # root = 'data/0-1000#1000-2000'
     # root = 'data/0-5000#5000-10000'
-    root = 'data/0-1200894#1200894-2401789'
-    model_path = os.path.join(root, 'clf.model')
-    real_path = os.path.join(root, 'test_real.csv')
-    pred_path = os.path.join(root, 'test_pred.csv')
-    dataset = Dataset.from_csv(os.path.join(root, 'test.csv'))
-
-    # model_path = os.path.join('data/0-1200894#1200894-2401789', 'clf.model')
-    # real_path = os.path.join('data', 'train_real.csv')
-    # pred_path = os.path.join('data', 'train_pred_2.csv')
-    # dataset = Dataset.from_csv(os.path.join('data', 'train.csv'))
-
+    # root_path = os.path.join(root, )
+    # root = 'data/0-1200894#1200894-2401789'
+    model_path = 'clf.model'
+    pred_path = 'pred.csv'
+    # model_path = os.path.join(root, 'clf.model')
+    # real_path = os.path.join(root, 'test_real.csv')
+    # pred_path = os.path.join(root, 'test_pred.csv')
+    dataset = Dataset.from_csv(dataset_path)
     clf = load_model(model_path)
     sound = SoundexBlocking(1)
 
@@ -79,15 +77,6 @@ def cluster_main():
     clusters = cluster_by_blocking(clusters, lambda x: x[4] + x[6], 201, clf)
     clusters = cluster_by_blocking(clusters, lambda x: soundex(x[5]) + soundex(x[7]), 201, clf)
     clusters = cluster_by_blocking(clusters, lambda x: soundex(x[1]) + soundex(x[3]), 201, clf)
-    
-    # for i in range(9):
-    #     clusters = cluster_by_blocking(clusters, partial(ssn_key, ti=i), 201, clf)
-
-    # clusters = cluster_by_key(clusters, lambda x: x[4] + x[6])
-    # clusters = refine_clusters(clusters, clf)
-
-    # clusters = cluster_by_blocking(clusters, lambda x: soundex(x[1]) + soundex(x[7]), 201, clf)
-    # clusters = cluster_by_blocking(clusters, lambda x: soundex(x[3]) + x[9], 201, clf)
 
     clusters = [[r.ruid for r in cluster] for cluster in clusters]
     write_clusters(clusters, pred_path)
@@ -99,8 +88,14 @@ def cluster_main():
 
 
 if __name__ == '__main__':
+    try:
+        _, dataset_path, real_path = sys.argv
+    except:
+        print('Usage: python main.py <train.csv> <real.csv>')
+        exit(0)
+
     start_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
     print(f'[{start_time}]')
     # classifier_main()
-    cluster_main()
+    cluster_main(dataset_path, real_path)
     print(f'[{start_time}] -> [{time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}]')

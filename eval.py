@@ -14,9 +14,6 @@ def save_benchmark(end=1000):
                 cuid = int(line[0])
                 if cuid < end:
                     writer.writerow(line)
-                # cuid = int(line[0])
-                # if cuid < 1000:
-                #     writer.writerow(line)
 
 
 def calc_real_pairs():

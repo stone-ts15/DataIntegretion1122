@@ -54,13 +54,6 @@ def cluster_by_blocking(clusters, fk, max_refine_size, clf):
     for r in rs:
         results.extend(r)
 
-    # for i, cs in enumerate(clusters):
-    #     if i % 100 == 0:
-    #         print(f'[{time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}] [cluster_by_blocking] {i}/{len(d)}')
-    #     start = 0
-    #     while start < len(cs):
-    #         results.extend(group_cluster_by_classifier(cs[start:start + max_refine_size], clf))
-    #         start += max_refine_size
     print(f'[{time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}]'
           f' [cluster_by_blocking] {len(clusters)} -> {len(results)}')
 

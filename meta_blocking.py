@@ -96,10 +96,6 @@ class BlockingMethod:
 
         return matches
 
-        # result = DisjointSet(self.nrows)
-        # result.update(matches)
-        # return result.clusters()
-
 
 class MultiBlocking:
     def __init__(self, methods: [(BlockingMethod, str)]):
@@ -109,7 +105,6 @@ class MultiBlocking:
         all_matches = []
         for method, key in self.method_details:
             method(ds, key)
-            # all_matches.append(method.block_to_result(threshold_blocking))
 
         # bfs
         blocks = []
@@ -136,28 +131,6 @@ class MultiBlocking:
             blocks.append(new_block)
 
         return blocks
-
-
-
-        # shared_blockings = {}
-        # match_map = {}
-        # for match in all_matches:
-        #     for (ri, rj), common_weight in match:
-        #         shared_blockings[ri] = shared_blockings.get(ri, 0) + 1
-        #         shared_blockings[rj] = shared_blockings.get(rj, 0) + 1
-        #         if (ri, rj) not in match_map:
-        #             match_map[(ri, rj)] = common_weight
-        #         else:
-        #             match_map[(ri, rj)] += common_weight
-        #
-        # matches = []
-        # for (ri, rj), weight in match_map.items():
-        #     Bi, Bj, Bij = shared_blockings[ri], shared_blockings[rj], weight
-        #     Jaccard = Bij / (Bi + Bj - Bij)
-        #     if Jaccard >= threshold_all:
-        #         matches.append((ri, rj))
-
-        # return matches
 
     def blocking(self, ds: Dataset, threshold_all):
         matches = self(ds, threshold_all)
@@ -277,20 +250,11 @@ class SoundexBlocking(BlockingMethod):
             for i, row in enumerate(ds.rows):
                 fname = row['fname']
                 lname = row['lname']
-                # attr = row[key]
-                ruid = row.ruid
-                # attr: Kezun
-                # attr: Kezhun
-                # encoding = self.soundex(attr)
+
                 ef = self.soundex(fname)
                 el = self.soundex(lname)
                 self.update_ds(row, ef)
                 self.update_ds(row, el)
-            # if encoding is None:
-            #     self.blocks['null'].append(ruid)
-            #     continue
-            #
-            # self.update_ds(row, encoding)
 
                 if i % self.debug['log_interval'] == 0:
                     print('match ', i)

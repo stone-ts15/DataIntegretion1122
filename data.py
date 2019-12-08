@@ -107,7 +107,7 @@ class DisjointSet:
             roota = self.find_root(a)
             rootb = self.find_root(b)
 
-            if roota == rootb:
+            if roota == rootb and roota >= 0:
                 continue
 
             depth_a, depth_b = -self.root.get(roota, -1), -self.root.get(rootb, -1)
