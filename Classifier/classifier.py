@@ -1,11 +1,11 @@
 import pickle
 import time
-import random
+# import random
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.cluster import k_means_
+# from sklearn.cluster import k_means_
 
 from .similarity import get_similarity
 
@@ -59,7 +59,7 @@ def cluster_by_classifier_n2(rows, clf):
                 break
         if not assign:
             clusters.append([row])
-    clusters = [[r.ruid for r in cluster] for cluster in clusters]
+    # clusters = [[r.ruid for r in cluster] for cluster in clusters]
     return clusters
 
 
@@ -103,19 +103,19 @@ def cluster_by_classifier_n2_2(rows, clf):
 #     return _cs
 
 
-def cluster_by_classifier_fast(rows, clf):
-    def _distance(row_a, row_b):
-        feature = get_similarity(row_a, row_b)
-        return 1 - clf.predict([feature])[0]
-
-    print(f'[{time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}]')
-    clusters = [row.data for row in rows]
-    n_clusters = len(rows) / 3
-    k_means_.euclidean_distances = _distance
-    k_means = k_means_.KMeans(n_clusters=n_clusters, n_jobs=8, random_state=1)
-    print(k_means.fit(clusters))
-    print(f'[{time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}]')
-    return []
+# def cluster_by_classifier_fast(rows, clf):
+#     def _distance(row_a, row_b):
+#         feature = get_similarity(row_a, row_b)
+#         return 1 - clf.predict([feature])[0]
+#
+#     print(f'[{time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}]')
+#     clusters = [row.data for row in rows]
+#     n_clusters = len(rows) / 3
+#     k_means_.euclidean_distances = _distance
+#     k_means = k_means_.KMeans(n_clusters=n_clusters, n_jobs=8, random_state=1)
+#     print(k_means.fit(clusters))
+#     print(f'[{time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}]')
+#     return []
 
 
 cluster_by_classifier = cluster_by_classifier_n2
@@ -128,3 +128,21 @@ def write_clusters(clusters, pred_path):
     with open(pred_path, 'w') as out:
         for cluster in clusters:
             out.write(','.join(map(str, cluster)) + '\n')
+
+
+def group_cluster_by_classifier(_clusters, clf):
+    clusters = []
+    for i, c in enumerate(_clusters):
+        if (i + 1) % 100 == 0:
+            print(f'[{time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}]'
+                  f' Cluster: {i + 1}/{len(clusters)}/{len(_clusters)}')
+        assign = False
+        for cluster in clusters:
+            feature = get_similarity(c[0], cluster[0])
+            if clf.predict([feature])[0] == 1:
+                cluster.extend(c)
+                assign = True
+                break
+        if not assign:
+            clusters.append(c)
+    return clusters

@@ -82,6 +82,8 @@ def affine_gap(sa, sb):
 
 
 def smith_waterman(sa, sb):
+    if len(sa) == 0 or len(sb) == 0:
+        return 0
     cg = 1
     cb = 2
     cp = -1

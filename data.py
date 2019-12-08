@@ -42,9 +42,6 @@ class Vertex:
         self.neighbors = []
 
 
-
-
-
 class Dataset:
     def __init__(self):
         self.rows = []
@@ -61,16 +58,21 @@ class Dataset:
                 cuid = int(line[0])
                 ruid = int(line[1])
                 row = Row(cuid, ruid, tuple(line[2:]))
+
+                # ruid = int(line[0])
+                # row = Row(-1, ruid, tuple(line[1:]))
+
                 ds.rows.append(row)
+
                 # vertex = Vertex(ruid, cuid)
                 # ds.vertices.append(vertex)
 
                 if cuid in ds.rows_oc:
-                    ds.rows_oc[cuid] = ds.rows_oc[cuid] + (row,)
+                    ds.rows_oc[cuid].append(row)
                 else:
-                    ds.rows_oc[cuid] = (row,)
+                    ds.rows_oc[cuid] = [row]
 
-                if i % 20000 == 0:
+                if i % 200000 == 0:
                     print('read ', i)
         ds.nrows = len(ds.rows)
         return ds
@@ -126,4 +128,3 @@ class DisjointSet:
                 cid_map[root].append(node)
         self.cid_map = cid_map
         return cid_map.values()
-

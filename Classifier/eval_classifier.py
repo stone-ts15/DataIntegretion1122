@@ -133,8 +133,8 @@ def evaluate_cluster(data_path, model_path, real_path, pred_path):
 def train_classifier(root, model_path):
     train_features, train_labels, test_features, test_labels = load_dataset(root)
 
-    clf = LRClassifier(C=1, random_state=1)
-    # clf = DTClassifier(max_depth=3, random_state=1)
+    # clf = LRClassifier(C=1, random_state=1)
+    clf = DTClassifier(max_depth=3, random_state=1)
     # clf = RBClassifier()
     clf.fit(train_features, train_labels)
     save_model(clf, model_path)
@@ -156,8 +156,8 @@ def train_classifier(root, model_path):
 
 def main():
     random.seed(1)
-    train_cuid_range = (0, 5000)
-    test_cuid_range = (train_cuid_range[1], 10000)
+    train_cuid_range = (0, 1200894)
+    test_cuid_range = (train_cuid_range[1], 2401789)
     root = _get_dataset_root(train_cuid_range, test_cuid_range)
     model_path = os.path.join(root, 'clf.model')
 
