@@ -21,7 +21,7 @@ def save_benchmark(end=1000):
 
 def calc_real_pairs():
     ans = OrderedDict()
-    with open(os.path.join(DATA_ROOT, 'benchmark.csv'), 'r', encoding='utf-8') as f:
+    with open(os.path.join(DATA_ROOT, 'train.csv'), 'r', encoding='utf-8') as f:
         reader = csv.reader(f)
         for line in reader:
             cuid = int(line[0])
@@ -31,7 +31,7 @@ def calc_real_pairs():
             else:
                 ans[cuid] = [recid]
 
-    with open(os.path.join(DATA_ROOT, 'bm_real.csv'), 'w', encoding='utf-8', newline='') as fo:
+    with open(os.path.join(DATA_ROOT, 'train_real.csv'), 'w', encoding='utf-8', newline='') as fo:
         writer = csv.writer(fo)
         for cuid, recs in ans.items():
             writer.writerow(recs)
@@ -78,9 +78,9 @@ def val(pred_file, real_file):
 
 
 def main():
-    save_benchmark(1000)
-    calc_real_pairs()
-    print(val(os.path.join(DATA_ROOT, 'bm_fake.csv'), os.path.join(DATA_ROOT, 'bm_real.csv')))
+    # save_benchmark(1000)
+    # calc_real_pairs()
+    print(val(os.path.join(DATA_ROOT, 'ashduaj.csv'), os.path.join(DATA_ROOT, 'train_real.csv')))
 
 
 if __name__ == "__main__":
