@@ -259,20 +259,41 @@ class SoundexBlocking(BlockingMethod):
 
     def __call__(self, ds: Dataset, key):
         super(SoundexBlocking, self).__call__(ds, key)
-        for i, row in enumerate(ds.rows):
-            attr = row[key]
-            ruid = row.ruid
-            # attr: Kezun
-            # attr: Kezhun
-            encoding = self.soundex(attr)
-            if encoding is None:
-                self.blocks['null'].append(ruid)
-                continue
+        if ',' not in key:
+            for i, row in enumerate(ds.rows):
 
-            self.update_ds(row, encoding)
+                attr = row[key]
+                ruid = row.ruid
+                # attr: Kezun
+                # attr: Kezhun
+                encoding = self.soundex(attr)
+                if encoding is None:
+                    self.blocks['null'].append(ruid)
+                    continue
 
-            if i % self.debug['log_interval'] == 0:
-                print('match ', i)
+                self.update_ds(row, encoding)
+        else:
+            f, l = key.split(',')
+            for i, row in enumerate(ds.rows):
+                fname = row['fname']
+                lname = row['lname']
+                # attr = row[key]
+                ruid = row.ruid
+                # attr: Kezun
+                # attr: Kezhun
+                # encoding = self.soundex(attr)
+                ef = self.soundex(fname)
+                el = self.soundex(lname)
+                self.update_ds(row, ef)
+                self.update_ds(row, el)
+            # if encoding is None:
+            #     self.blocks['null'].append(ruid)
+            #     continue
+            #
+            # self.update_ds(row, encoding)
+
+                if i % self.debug['log_interval'] == 0:
+                    print('match ', i)
 
         self.del_outliers()
         return self.blocks

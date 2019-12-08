@@ -3,6 +3,9 @@ from py_stringmatching import GeneralizedJaccard, Soundex
 
 from data import Row
 
+gj = GeneralizedJaccard(sim_func=Soundex().get_raw_score)
+
+
 def rule_based_ssn(row1, row2):
     ssn1 = row1.__getitem__('ssn')
     ssn2 = row2.__getitem__('ssn')
@@ -21,8 +24,13 @@ def rule_based_name(row1, row2, percentage):
     name2 = [row2.__getitem__('fname'), row2.__getitem__('lname')]
     if len(row2.__getitem__('minit')) != 0:
         name2.append(row1.__getitem__('minit'))
-    gj = GeneralizedJaccard(sim_func=Soundex().get_raw_score)
-    return gj.get_sim_score(name1, name2) * percentage
+    # if not name1 or not name2:
+    #     return 0
+    # gj = GeneralizedJaccard(sim_func=Soundex().get_raw_score)
+    try:
+        return gj.get_sim_score(name1, name2) * percentage
+    except:
+        return 0
 
 def rule_based_stadd(row1, row2, percentage):
     attr1 = row1.__getitem__('stadd').split(' ')[0]
