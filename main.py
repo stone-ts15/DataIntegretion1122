@@ -75,15 +75,17 @@ def cluster_main():
 
     clusters = [[row] for row in dataset.rows]
     clusters = cluster_by_key(clusters, lambda x: x[0] if x[0] != '000000000' else None)
+    clusters = cluster_by_key(clusters, lambda x: x[1] + x[3])
+    clusters = cluster_by_blocking(clusters, lambda x: x[4] + x[6], 201, clf)
+    clusters = cluster_by_blocking(clusters, lambda x: soundex(x[5]) + soundex(x[7]), 201, clf)
+    clusters = cluster_by_blocking(clusters, lambda x: soundex(x[1]) + soundex(x[3]), 201, clf)
+    
     # for i in range(9):
     #     clusters = cluster_by_blocking(clusters, partial(ssn_key, ti=i), 201, clf)
 
-    clusters = cluster_by_key(clusters, lambda x: x[1] + x[3])
-    clusters = cluster_by_key(clusters, lambda x: x[4] + x[6])
-    clusters = refine_clusters(clusters, clf)
-    # clusters = cluster_by_blocking(clusters, lambda x: x[4] + x[6], 201, clf)
-    clusters = cluster_by_blocking(clusters, lambda x: soundex(x[5]) + soundex(x[7]), 201, clf)
-    clusters = cluster_by_blocking(clusters, lambda x: soundex(x[1]) + soundex(x[3]), 201, clf)
+    # clusters = cluster_by_key(clusters, lambda x: x[4] + x[6])
+    # clusters = refine_clusters(clusters, clf)
+
     # clusters = cluster_by_blocking(clusters, lambda x: soundex(x[1]) + soundex(x[7]), 201, clf)
     # clusters = cluster_by_blocking(clusters, lambda x: soundex(x[3]) + x[9], 201, clf)
 
